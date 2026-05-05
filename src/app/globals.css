@@ -1,0 +1,233 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600;700&family=Bebas+Neue&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0A0F1E;
+  --bg-card: #0E1628;
+  --bg-hover: #141d35;
+  --border: rgba(255,255,255,0.08);
+  --border-bright: rgba(255,255,255,0.18);
+
+  --green: #00FF87;
+  --green-dim: rgba(0,255,135,0.12);
+  --green-mid: rgba(0,255,135,0.25);
+
+  --red: #FF3B3B;
+  --red-dim: rgba(255,59,59,0.12);
+  --red-mid: rgba(255,59,59,0.25);
+
+  --amber: #FFB800;
+  --amber-dim: rgba(255,184,0,0.12);
+  --amber-mid: rgba(255,184,0,0.25);
+
+  --white: #FFFFFF;
+  --muted: rgba(255,255,255,0.45);
+  --very-muted: rgba(255,255,255,0.18);
+
+  --font-display: 'DM Serif Display', serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --font-label: 'Bebas Neue', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: var(--font-mono);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Scanline overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ── Typography ── */
+.font-display { font-family: var(--font-display); }
+.font-mono    { font-family: var(--font-mono); }
+.font-label   { font-family: var(--font-label); letter-spacing: 0.08em; }
+
+/* ── Cards ── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+.card-bright {
+  background: var(--bg-card);
+  border: 1px solid var(--border-bright);
+  border-radius: 2px;
+}
+
+/* ── Buttons ── */
+.btn {
+  font-family: var(--font-label);
+  letter-spacing: 0.1em;
+  font-size: 1rem;
+  padding: 0.85rem 2rem;
+  border-radius: 2px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--green);
+  color: #000;
+}
+.btn-primary:not(:disabled):hover {
+  background: #00ffaa;
+  transform: translateY(-1px);
+  box-shadow: 0 0 20px rgba(0,255,135,0.4);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--white);
+  border: 1px solid var(--border-bright);
+}
+.btn-ghost:not(:disabled):hover {
+  background: var(--bg-hover);
+  border-color: rgba(255,255,255,0.4);
+}
+.btn-red {
+  background: var(--red);
+  color: #fff;
+}
+.btn-red:not(:disabled):hover {
+  background: #ff5555;
+  transform: translateY(-1px);
+  box-shadow: 0 0 20px rgba(255,59,59,0.4);
+}
+.btn-amber {
+  background: var(--amber);
+  color: #000;
+}
+.btn-amber:not(:disabled):hover {
+  background: #ffc933;
+  transform: translateY(-1px);
+}
+.btn-full { width: 100%; }
+
+/* ── Vote buttons ── */
+.vote-btn {
+  font-family: var(--font-label);
+  letter-spacing: 0.12em;
+  font-size: 1.35rem;
+  padding: 1.2rem 1rem;
+  border-radius: 2px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+  background: var(--bg-card);
+  color: var(--white);
+}
+.vote-btn:disabled { cursor: not-allowed; opacity: 0.4; }
+.vote-btn.fair:not(:disabled):hover,
+.vote-btn.fair.selected {
+  border-color: var(--green);
+  background: var(--green-dim);
+  color: var(--green);
+  box-shadow: 0 0 24px rgba(0,255,135,0.2);
+}
+.vote-btn.overpriced:not(:disabled):hover,
+.vote-btn.overpriced.selected {
+  border-color: var(--red);
+  background: var(--red-dim);
+  color: var(--red);
+  box-shadow: 0 0 24px rgba(255,59,59,0.2);
+}
+.vote-btn.steal:not(:disabled):hover,
+.vote-btn.steal.selected {
+  border-color: var(--amber);
+  background: var(--amber-dim);
+  color: var(--amber);
+  box-shadow: 0 0 24px rgba(255,184,0,0.2);
+}
+
+/* ── Inputs ── */
+.input {
+  background: var(--bg-card);
+  border: 1px solid var(--border-bright);
+  border-radius: 2px;
+  color: var(--white);
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.input:focus { border-color: var(--green); }
+.input::placeholder { color: var(--very-muted); }
+
+/* ── Price display ── */
+.price-tag {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* ── Verdict colors ── */
+.verdict-fair     { color: var(--green); }
+.verdict-overpriced { color: var(--red); }
+.verdict-steal    { color: var(--amber); }
+
+/* ── Pulse animation ── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.85); }
+}
+.pulse { animation: pulse-dot 1.4s ease-in-out infinite; }
+
+/* ── Fade in ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.4s ease forwards; }
+
+/* ── Ticker ── */
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.ticker-inner { animation: ticker 28s linear infinite; }
+
+/* ── Score pop ── */
+@keyframes scorePop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+.score-pop { animation: scorePop 0.35s ease; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
