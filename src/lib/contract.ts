@@ -38,7 +38,7 @@ export function getAccount(): ReturnType<typeof createAccount> {
   } catch {}
   const account = createAccount();
   try {
-    localStorage.setItem("nyp_pk", account.privateKey);
+   localStorage.setItem("nyp_pk", (account as any).privateKey);
   } catch {}
   return account;
 }
