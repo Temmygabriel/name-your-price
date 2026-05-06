@@ -7,15 +7,7 @@ const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string
 const MAX_ATTEMPTS = 3;
 
 function makeClient(account: ReturnType<typeof createAccount>) {
-  return createClient({
-    chain: {
-      ...studionet,
-      rpcUrls: {
-        default: { http: ["/api/rpc"] },
-      },
-    },
-    account,
-  });
+  return createClient({ chain: studionet, account });
 }
 
 export function makeAccount(privateKey?: `0x${string}`) {
