@@ -7,15 +7,11 @@ const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string
 const MAX_ATTEMPTS = 3;
 
 function makeClient(account: ReturnType<typeof createAccount>) {
-  const rpcUrl =
-    typeof window !== "undefined" && window.location.hostname === "localhost"
-      ? "http://localhost:3000/api/rpc"
-      : "https://studio.genlayer.com/api";
   return createClient({
     chain: {
       ...studionet,
       rpcUrls: {
-        default: { http: [rpcUrl] },
+        default: { http: ["/api/rpc"] },
       },
     },
     account,
@@ -94,10 +90,10 @@ async function writeContractWithReturn(
       const client = makeClient(account);
       console.log(`writeContractWithReturn attempt ${attempt}/${MAX_ATTEMPTS}: ${method}`);
       const returnValue = await client.simulateWriteContract({
-        address: CONTRACT_ADDRESS,
-        functionName: method,
-        args,
-      });
+  address: CONTRACT_ADDRESS,
+  functionName: method,
+  args: args as any,
+});
       const hash = await client.writeContract({
         address: CONTRACT_ADDRESS,
         functionName: method,
@@ -130,10 +126,10 @@ async function writeContractWithReturn(
 async function readContract(method: string, args: unknown[]): Promise<string> {
   const account = createAccount();
   const client = makeClient(account);
-  const result = await client.readContract({
+ const result = await client.readContract({
     address: CONTRACT_ADDRESS,
     functionName: method,
-    args,
+    args: args as any,
   });
   return result as string;
 }
