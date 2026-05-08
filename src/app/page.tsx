@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import type { Room, Screen, LeaderboardEntry } from "@/types";
 import {
   getPlayerAddress,
@@ -83,9 +83,9 @@ export default function HomePage() {
         if (allVoted && !verdictRequestedRef.current) {
           if (allVotedAtRef.current === 0) allVotedAtRef.current = Date.now();
           const elapsed = Date.now() - allVotedAtRef.current;
-          if (isHost || elapsed > 30_000) {
+          if (isHost || elapsed > 15_000) {
             verdictRequestedRef.current = true;
-            try { await requestVerdict(code); } catch { }
+            try { await requestVerdict(code); } catch { verdictRequestedRef.current = false; }
           }
         }
       }
@@ -98,9 +98,9 @@ export default function HomePage() {
         setScreen("round_reveal");
         if (revealStartRef.current === 0) revealStartRef.current = Date.now();
 
-        if (isHost && !advancingRoundRef.current && Date.now() - revealStartRef.current > 12_000) {
+        if (!advancingRoundRef.current && Date.now() - revealStartRef.current > 12_000) {
           advancingRoundRef.current = true;
-          try { await advanceRound(code); } catch { }
+          try { await advanceRound(code); } catch { advancingRoundRef.current = false; }
         }
       }
 
@@ -125,8 +125,6 @@ export default function HomePage() {
     setPlayerName(name);
     prevRoundRef.current = -1;
     resetRoundRefs();
-    // Polling will route to correct screen automatically
-    // Solo rooms → round_active, Multiplayer → lobby
     setScreen("lobby");
   }
 
@@ -160,32 +158,15 @@ export default function HomePage() {
   }
 
   if (screen === "landing") {
-    return (
-      <LandingScreen
-        onRoomReady={handleRoomReady}
-        onLeaderboard={handleLeaderboard}
-        onRejoin={handleRejoin}
-      />
-    );
+    return <LandingScreen onRoomReady={handleRoomReady} onLeaderboard={handleLeaderboard} onRejoin={handleRejoin} />;
   }
 
   if (screen === "rejoin") {
-    return (
-      <RejoinScreen
-        onRejoin={handleRejoinRoom}
-        onBack={() => setScreen("landing")}
-      />
-    );
+    return <RejoinScreen onRejoin={handleRejoinRoom} onBack={() => setScreen("landing")} />;
   }
 
   if (screen === "leaderboard") {
-    return (
-      <LeaderboardScreen
-        entries={leaderboard}
-        loading={leaderboardLoading}
-        onBack={() => setScreen("landing")}
-      />
-    );
+    return <LeaderboardScreen entries={leaderboard} loading={leaderboardLoading} onBack={() => setScreen("landing")} />;
   }
 
   if (!room) {
@@ -200,18 +181,11 @@ export default function HomePage() {
   }
 
   if (screen === "lobby") {
-    return (
-      <LobbyScreen
-        room={room}
-        roomCode={roomCode}
-        playerName={playerName}
-        onLeave={handleLeave}
-      />
-    );
+    return <LobbyScreen room={room} roomCode={roomCode} playerName={playerName} onLeave={handleLeave} />;
   }
 
   if (screen === "round_active") {
-    return <RoundActiveScreen room={room} roomCode={roomCode} />;
+    return <RoundActiveScreen room={room} roomCode={roomCode} onVoted={poll} />;
   }
 
   if (screen === "round_scoring_wait") {
@@ -223,12 +197,7 @@ export default function HomePage() {
   }
 
   if (screen === "final_results") {
-    return (
-      <FinalResultsScreen
-        room={room}
-        onPlayAgain={handleLeave}
-      />
-    );
+    return <FinalResultsScreen room={room} onPlayAgain={handleLeave} />;
   }
 
   return null;
