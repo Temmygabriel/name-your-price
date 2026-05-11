@@ -24,7 +24,10 @@ export function getAccount(): ReturnType<typeof createAccount> {
   } catch {}
   const account = createAccount();
   try {
-    localStorage.setItem("nyp_pk", (account as any).source);
+    const source = (account as any).source;
+    if (source && typeof source === "string" && source.startsWith("0x") && source.length === 66) {
+      localStorage.setItem("nyp_pk", source);
+    }
   } catch {}
   return account;
 }
