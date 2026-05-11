@@ -14,8 +14,6 @@ export function makeAccount(privateKey?: `0x${string}`) {
   return createAccount(privateKey);
 }
 
-// ── ACCOUNT MANAGEMENT ────────────────────────────────────────────────────────
-
 export function getAccount(): ReturnType<typeof createAccount> {
   if (typeof window === "undefined") return createAccount();
   try {
@@ -26,7 +24,7 @@ export function getAccount(): ReturnType<typeof createAccount> {
   } catch {}
   const account = createAccount();
   try {
-   localStorage.setItem("nyp_pk", (account as any).privateKey);
+    localStorage.setItem("nyp_pk", (account as any).privateKey);
   } catch {}
   return account;
 }
@@ -34,8 +32,6 @@ export function getAccount(): ReturnType<typeof createAccount> {
 export function getPlayerAddress(): string {
   return getAccount().address;
 }
-
-// ── WRITE ────────────────────────────────────────────────────────────────────
 
 async function writeContract(
   account: ReturnType<typeof createAccount>,
@@ -82,10 +78,10 @@ async function writeContractWithReturn(
       const client = makeClient(account);
       console.log(`writeContractWithReturn attempt ${attempt}/${MAX_ATTEMPTS}: ${method}`);
       const returnValue = await client.simulateWriteContract({
-  address: CONTRACT_ADDRESS,
-  functionName: method,
-  args: args as any,
-});
+        address: CONTRACT_ADDRESS,
+        functionName: method,
+        args: args as any,
+      });
       const hash = await client.writeContract({
         address: CONTRACT_ADDRESS,
         functionName: method,
@@ -113,12 +109,10 @@ async function writeContractWithReturn(
   throw new Error("All attempts failed");
 }
 
-// ── READ ─────────────────────────────────────────────────────────────────────
-
 async function readContract(method: string, args: unknown[]): Promise<string> {
   const account = createAccount();
   const client = makeClient(account);
- const result = await client.readContract({
+  const result = await client.readContract({
     address: CONTRACT_ADDRESS,
     functionName: method,
     args: args as any,
@@ -126,48 +120,34 @@ async function readContract(method: string, args: unknown[]): Promise<string> {
   return result as string;
 }
 
-// ── CONTRACT METHODS ──────────────────────────────────────────────────────────
-
 export async function createRoom(hostName: string, roundCount: number): Promise<string> {
   const account = getAccount();
-  const code = await writeContractWithReturn(account, "create_room", [account.address, hostName, roundCount]);
-  return code;
-}
-
-export async function createRoomDirect(
-  hostName: string,
-  roundCount: number,
-  onCode: (code: string) => void
-): Promise<void> {
-  const code = await createRoom(hostName, roundCount);
-  onCode(code);
+  return await writeContractWithReturn(account, "create_room", [hostName, roundCount]);
 }
 
 export async function createSoloRoom(playerName: string, roundCount: number): Promise<string> {
   const account = getAccount();
-  // simulateWriteContract captures the return value (room code) directly
-  const code = await writeContractWithReturn(account, "create_solo_room", [account.address, playerName, roundCount]);
-  return code;
+  return await writeContractWithReturn(account, "create_solo_room", [playerName, roundCount]);
 }
 
 export async function joinRoom(roomCode: string, playerName: string): Promise<void> {
   const account = getAccount();
-  await writeContract(account, "join_room", [roomCode, account.address, playerName]);
+  await writeContract(account, "join_room", [roomCode, playerName]);
 }
 
 export async function toggleReady(roomCode: string): Promise<void> {
   const account = getAccount();
-  await writeContract(account, "toggle_ready", [roomCode, account.address]);
+  await writeContract(account, "toggle_ready", [roomCode]);
 }
 
 export async function startGame(roomCode: string): Promise<void> {
   const account = getAccount();
-  await writeContract(account, "start_game", [roomCode, account.address]);
+  await writeContract(account, "start_game", [roomCode]);
 }
 
 export async function submitVote(roomCode: string, vote: string): Promise<void> {
   const account = getAccount();
-  await writeContract(account, "submit_vote", [roomCode, account.address, vote]);
+  await writeContract(account, "submit_vote", [roomCode, vote]);
 }
 
 export async function requestVerdict(roomCode: string): Promise<void> {
@@ -179,8 +159,6 @@ export async function advanceRound(roomCode: string): Promise<void> {
   const account = getAccount();
   await writeContract(account, "advance_round", [roomCode]);
 }
-
-// ── READ METHODS ──────────────────────────────────────────────────────────────
 
 export async function getRoom(roomCode: string): Promise<Room> {
   const raw = await readContract("get_room", [roomCode]);
