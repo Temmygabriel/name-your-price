@@ -58,6 +58,12 @@ async function writeContractWithReturn(
     try {
       const client = makeClient(account);
       console.log(`writeContractWithReturn attempt ${attempt}/${MAX_ATTEMPTS}: ${method}`);
+      const returnValue = await client.simulateWriteContract({
+        address: CONTRACT_ADDRESS,
+        functionName: method,
+        args: args as any,
+        account,
+      } as any);
       const hash = await client.writeContract({
         address: CONTRACT_ADDRESS,
         functionName: method,
@@ -65,13 +71,12 @@ async function writeContractWithReturn(
         account,
         leaderOnly: false,
       } as any);
-      const receipt = await client.waitForTransactionReceipt({
+      await client.waitForTransactionReceipt({
         hash,
         status: TransactionStatus.ACCEPTED,
         retries: 120,
         interval: 4000,
       });
-      const returnValue = (receipt as any)?.data?.result ?? (receipt as any)?.result ?? "";
       console.log(`writeContractWithReturn success: ${method}, returned:`, returnValue);
       return returnValue as string;
     } catch (err: any) {
