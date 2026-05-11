@@ -1,13 +1,9 @@
 "use client";
 import { useState } from "react";
-import {
-  getPlayerAddress,
-  createRoomDirect,
-  createSoloRoom,
-  joinRoom,
-} from "@/lib/contract";
+import { makeAccount, createRoom, createSoloRoom, joinRoom } from "@/lib/contract";
 
 interface Props {
+  account: ReturnType<typeof makeAccount>;
   onRoomReady: (roomCode: string, playerName: string) => void;
   onLeaderboard: () => void;
   onRejoin: () => void;
@@ -15,7 +11,7 @@ interface Props {
 
 type Mode = "idle" | "create" | "join" | "solo";
 
-export default function LandingScreen({ onRoomReady, onLeaderboard, onRejoin }: Props) {
+export default function LandingScreen({ account, onRoomReady, onLeaderboard, onRejoin }: Props) {
   const [mode, setMode] = useState<Mode>("idle");
   const [name, setName] = useState("");
   const [joinCode, setJoinCode] = useState("");
@@ -23,14 +19,13 @@ export default function LandingScreen({ onRoomReady, onLeaderboard, onRejoin }: 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const address = getPlayerAddress();
+  const address = account.address;
 
   async function handleCreate() {
     if (!name.trim()) return setError("Enter your name first");
     setLoading(true); setError("");
     try {
-      let code = "";
-      await createRoomDirect(name.trim(), rounds, (c) => { code = c; });
+      const code = await createRoom(account, name.trim(), rounds);
       if (code) onRoomReady(code, name.trim());
       else setError("Room created — check console for code");
     } catch (e: unknown) {
@@ -55,7 +50,7 @@ export default function LandingScreen({ onRoomReady, onLeaderboard, onRejoin }: 
     if (!name.trim()) return setError("Enter your name first");
     setLoading(true); setError("");
     try {
-      const code = await createSoloRoom(name.trim(), rounds);
+      const code = await createSoloRoom(account, name.trim(), rounds);
       onRoomReady(code, name.trim());
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to create solo room");
