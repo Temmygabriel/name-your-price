@@ -18,15 +18,15 @@ export function getAccount(): ReturnType<typeof createAccount> {
   if (typeof window === "undefined") return createAccount();
   try {
     const stored = localStorage.getItem("nyp_pk");
-    if (stored && stored.startsWith("0x") && stored.length === 66) {
+    if (stored && stored.startsWith("0x") && stored.length >= 64) {
       return createAccount(stored as `0x${string}`);
     }
   } catch {}
   const account = createAccount();
   try {
-    const source = (account as any).source;
-    if (source && typeof source === "string" && source.startsWith("0x") && source.length === 66) {
-      localStorage.setItem("nyp_pk", source);
+    const key = (account as any).privateKey;
+    if (key && typeof key === "string" && key.startsWith("0x")) {
+      localStorage.setItem("nyp_pk", key);
     }
   } catch {}
   return account;
