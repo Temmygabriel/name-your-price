@@ -184,9 +184,12 @@ export default function HomePage() {
     return <LobbyScreen room={room} roomCode={roomCode} playerName={playerName} onLeave={handleLeave} />;
   }
 
-  if (screen === "round_active") {
-    return <RoundActiveScreen room={room} roomCode={roomCode} onVoted={poll} />;
-  }
+ if (screen === "round_active") {
+  return <RoundActiveScreen room={room} roomCode={roomCode} onVoted={() => {
+    pollingRef.current = false;
+    poll();
+  }} />;
+}
 
   if (screen === "round_scoring_wait") {
     return <RoundScoringWaitScreen room={room} />;
