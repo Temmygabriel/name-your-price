@@ -23,22 +23,8 @@ export function getAccount(): ReturnType<typeof createAccount> {
     }
   } catch {}
   const account = createAccount();
-  console.log('account keys:', Object.keys(account));
-  console.log('account values:', Object.entries(account).map(([k, v]) => k + ':' + typeof v));
   try {
-    const candidates = [
-      (account as any).privateKey,
-      (account as any).key,
-      (account as any).signingKey?.privateKey,
-      (account as any).source,
-    ];
-    const pk = candidates.find(
-      (v): v is string =>
-        typeof v === "string" && v.startsWith("0x") && v.length === 66
-    );
-    if (pk) {
-      localStorage.setItem("nyp_pk", pk);
-    }
+    localStorage.setItem("nyp_pk", (account as any).source);
   } catch {}
   return account;
 }
