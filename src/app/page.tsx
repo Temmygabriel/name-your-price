@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { Room, Screen, LeaderboardEntry } from "@/types";
 import {
-  getPlayerAddress,
+  makeAccount,
   getRoom,
   getLeaderboard,
   requestVerdict,
@@ -26,6 +26,10 @@ export default function HomePage() {
   const [playerName, setPlayerName] = useState("");
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [accountReady, setAccountReady] = useState(false);
+
+  const accountRef = useRef<ReturnType<typeof makeAccount> | null>(null);
+  const playerAddressRef = useRef<string>("");
 
   const verdictRequestedRef = useRef(false);
   const advancingRoundRef = useRef(false);
@@ -36,6 +40,13 @@ export default function HomePage() {
   const roomCodeRef = useRef("");
 
   roomCodeRef.current = roomCode;
+
+  useEffect(() => {
+    const acc = makeAccount();
+    accountRef.current = acc;
+    playerAddressRef.current = acc.address;
+    setAccountReady(true);
+  }, []);
 
   function resetRoundRefs() {
     verdictRequestedRef.current = false;
@@ -55,7 +66,7 @@ export default function HomePage() {
 
       setRoom(data);
 
-      const myAddr = getPlayerAddress();
+      const myAddr = playerAddressRef.current;
       const isHost = data.host === myAddr;
 
       if (data.current_round !== prevRoundRef.current) {
@@ -85,7 +96,7 @@ export default function HomePage() {
           const elapsed = Date.now() - allVotedAtRef.current;
           if (isHost || elapsed > 15_000) {
             verdictRequestedRef.current = true;
-            try { await requestVerdict(code); } catch { verdictRequestedRef.current = false; }
+            try { await requestVerdict(accountRef.current!, code); } catch { verdictRequestedRef.current = false; }
           }
         }
       }
@@ -100,7 +111,7 @@ export default function HomePage() {
 
         if (!advancingRoundRef.current && Date.now() - revealStartRef.current > 12_000) {
           advancingRoundRef.current = true;
-          try { await advanceRound(code); } catch { advancingRoundRef.current = false; }
+          try { await advanceRound(accountRef.current!, code); } catch { advancingRoundRef.current = false; }
         }
       }
 
@@ -158,7 +169,14 @@ export default function HomePage() {
   }
 
   if (screen === "landing") {
-    return <LandingScreen onRoomReady={handleRoomReady} onLeaderboard={handleLeaderboard} onRejoin={handleRejoin} />;
+    return (
+      <LandingScreen
+        account={accountReady ? accountRef.current : null}
+        onRoomReady={handleRoomReady}
+        onLeaderboard={handleLeaderboard}
+        onRejoin={handleRejoin}
+      />
+    );
   }
 
   if (screen === "rejoin") {
@@ -184,12 +202,19 @@ export default function HomePage() {
     return <LobbyScreen room={room} roomCode={roomCode} playerName={playerName} onLeave={handleLeave} />;
   }
 
- if (screen === "round_active") {
-  return <RoundActiveScreen room={room} roomCode={roomCode} onVoted={() => {
-    pollingRef.current = false;
-    poll();
-  }} />;
-}
+  if (screen === "round_active") {
+    return (
+      <RoundActiveScreen
+        room={room}
+        roomCode={roomCode}
+        account={accountRef.current!}
+        onVoted={() => {
+          pollingRef.current = false;
+          poll();
+        }}
+      />
+    );
+  }
 
   if (screen === "round_scoring_wait") {
     return <RoundScoringWaitScreen room={room} />;
