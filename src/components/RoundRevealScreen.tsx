@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import type { Room, Vote } from "@/types";
-import { getPlayerAddress } from "@/lib/contract";
+import { makeAccount } from "@/lib/contract";
 
 interface Props {
   room: Room;
   roomCode: string;
+  account: ReturnType<typeof makeAccount>;
 }
 
 const VERDICT_LABELS: Record<string, string> = {
@@ -24,9 +25,9 @@ const VERDICT_BG: Record<string, string> = {
   steal: "var(--amber-dim)",
 };
 
-export default function RoundRevealScreen({ room, roomCode }: Props) {
+export default function RoundRevealScreen({ room, roomCode, account }: Props) {
   const [animate, setAnimate] = useState(false);
-  const myAddr = getPlayerAddress();
+  const myAddr = account.address;
   const round = room.current_round;
   const verdict = room.verdicts[String(round)];
   const product = room.products[round];
@@ -51,7 +52,6 @@ export default function RoundRevealScreen({ room, roomCode }: Props) {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
-      {/* Top bar */}
       <div className="flex items-center justify-between px-6 py-3" style={{ borderBottom: "1px solid var(--border)" }}>
         <div className="font-label text-sm" style={{ color: "var(--muted)", letterSpacing: "0.1em" }}>
           ROUND {round + 1} / {room.round_count}
@@ -63,13 +63,11 @@ export default function RoundRevealScreen({ room, roomCode }: Props) {
 
       <div className="flex-1 overflow-y-auto px-4 py-8">
         <div className="w-full max-w-lg mx-auto flex flex-col gap-5">
-          {/* Product */}
           <div className="text-center">
             <div className="font-mono text-sm mb-1" style={{ color: "var(--muted)" }}>{product.display_name}</div>
             <div className="price-tag" style={{ fontSize: "2rem", color: "var(--muted)" }}>{price}</div>
           </div>
 
-          {/* THE VERDICT */}
           <div
             className="card p-8 text-center fade-up"
             style={{ border: `2px solid ${color}`, background: bg }}
@@ -98,7 +96,6 @@ export default function RoundRevealScreen({ room, roomCode }: Props) {
             </div>
           </div>
 
-          {/* Contested badge */}
           {verdict.contested && (
             <div className="card p-3 text-center fade-up" style={{ border: "1px solid var(--amber)", background: "var(--amber-dim)" }}>
               <div className="font-label" style={{ color: "var(--amber)", letterSpacing: "0.15em" }}>⚡ CONTESTED</div>
@@ -108,7 +105,6 @@ export default function RoundRevealScreen({ room, roomCode }: Props) {
             </div>
           )}
 
-          {/* My result */}
           <div
             className="card p-4 text-center fade-up"
             style={{
@@ -127,7 +123,6 @@ export default function RoundRevealScreen({ room, roomCode }: Props) {
             </div>
           </div>
 
-          {/* All players votes + scores */}
           <div className="card p-4 fade-up">
             <div className="font-label text-xs mb-3" style={{ color: "var(--muted)", letterSpacing: "0.12em" }}>SCOREBOARD</div>
             <div className="flex flex-col gap-2">
@@ -164,7 +159,6 @@ export default function RoundRevealScreen({ room, roomCode }: Props) {
             </div>
           </div>
 
-          {/* Bot votes for fun */}
           {room.is_solo && (
             <div className="card p-4 fade-up">
               <div className="font-label text-xs mb-3" style={{ color: "var(--muted)", letterSpacing: "0.12em" }}>AI BOT VOTES</div>
