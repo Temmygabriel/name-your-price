@@ -3,7 +3,7 @@ import { useState } from "react";
 import { makeAccount, createRoom, createSoloRoom, joinRoom } from "@/lib/contract";
 
 interface Props {
-  account: ReturnType<typeof makeAccount>;
+  account: ReturnType<typeof makeAccount> | null;
   onRoomReady: (roomCode: string, playerName: string) => void;
   onLeaderboard: () => void;
   onRejoin: () => void;
@@ -19,9 +19,10 @@ export default function LandingScreen({ account, onRoomReady, onLeaderboard, onR
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const address = account.address;
+  const address = account?.address ?? "";
 
   async function handleCreate() {
+    if (!account) return;
     if (!name.trim()) return setError("Enter your name first");
     setLoading(true); setError("");
     try {
@@ -34,6 +35,7 @@ export default function LandingScreen({ account, onRoomReady, onLeaderboard, onR
   }
 
   async function handleJoin() {
+    if (!account) return;
     if (!name.trim()) return setError("Enter your name first");
     if (!joinCode.trim()) return setError("Enter a room code");
     setLoading(true); setError("");
@@ -47,6 +49,7 @@ export default function LandingScreen({ account, onRoomReady, onLeaderboard, onR
   }
 
   async function handleSolo() {
+    if (!account) return;
     if (!name.trim()) return setError("Enter your name first");
     setLoading(true); setError("");
     try {
@@ -88,11 +91,13 @@ export default function LandingScreen({ account, onRoomReady, onLeaderboard, onR
         </div>
 
         {/* Address pill */}
-        <div className="mb-8 fade-up" style={{ animationDelay: "0.1s" }}>
-          <div className="font-mono text-xs px-3 py-1.5" style={{ color: "var(--very-muted)", border: "1px solid var(--border)", borderRadius: 2 }}>
-            {address.slice(0, 6)}...{address.slice(-4)}
+        {address && (
+          <div className="mb-8 fade-up" style={{ animationDelay: "0.1s" }}>
+            <div className="font-mono text-xs px-3 py-1.5" style={{ color: "var(--very-muted)", border: "1px solid var(--border)", borderRadius: 2 }}>
+              {address.slice(0, 6)}...{address.slice(-4)}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Name input — always visible */}
         <div className="w-full max-w-sm mb-6 fade-up" style={{ animationDelay: "0.15s" }}>
