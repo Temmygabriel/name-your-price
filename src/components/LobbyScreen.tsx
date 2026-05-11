@@ -1,35 +1,40 @@
 "use client";
 import { useState } from "react";
 import type { Room } from "@/types";
-import { toggleReady, startGame, getPlayerAddress } from "@/lib/contract";
+import { makeAccount, toggleReady, startGame } from "@/lib/contract";
 
 interface Props {
   room: Room;
   roomCode: string;
   playerName: string;
+  account: ReturnType<typeof makeAccount>;
   onLeave: () => void;
 }
 
-export default function LobbyScreen({ room, roomCode, playerName, onLeave }: Props) {
+export default function LobbyScreen({ room, roomCode, playerName, account, onLeave }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const myAddr = getPlayerAddress();
+  const myAddr = account.address;
   const isHost = room.host === myAddr;
   const me = room.players[myAddr];
-  const humanPlayers = Object.values(room.players).filter((p) => !p.is_bot);
-  const othersReady = humanPlayers.filter((p) => p.address !== myAddr).every((p) => p.ready);
-  const canStart = isHost && humanPlayers.length >= 1 && othersReady;
+  const humanPlayers = Object.entries(room.players)
+    .filter(([, p]) => !p.is_bot)
+    .map(([addr, p]) => ({ ...p, address: addr }));
+  const allOthersReady = humanPlayers
+    .filter((p) => p.address !== myAddr)
+    .every((p) => p.ready);
+  const canStart = isHost && humanPlayers.length >= 2 && allOthersReady;
 
   async function handleReady() {
     setLoading(true); setError("");
-    try { await toggleReady(roomCode); }
+    try { await toggleReady(account, roomCode); }
     catch (e: unknown) { setError(e instanceof Error ? e.message : "Error"); }
     finally { setLoading(false); }
   }
 
   async function handleStart() {
     setLoading(true); setError("");
-    try { await startGame(roomCode); }
+    try { await startGame(account, roomCode); }
     catch (e: unknown) { setError(e instanceof Error ? e.message : "Error"); }
     finally { setLoading(false); }
   }
@@ -61,7 +66,9 @@ export default function LobbyScreen({ room, roomCode, playerName, onLeave }: Pro
             {humanPlayers.map((p) => (
               <div key={p.address} className="flex items-center justify-between py-2 px-3" style={{ background: "var(--bg)", borderRadius: 2 }}>
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full" style={{ background: p.ready || p.address === room.host ? "var(--green)" : "var(--very-muted)" }} />
+                  <div className="w-2 h-2 rounded-full" style={{
+                    background: p.ready || p.address === room.host ? "var(--green)" : "var(--very-muted)"
+                  }} />
                   <span className="font-mono text-sm">
                     {p.name}
                     {p.address === room.host && (
@@ -72,7 +79,10 @@ export default function LobbyScreen({ room, roomCode, playerName, onLeave }: Pro
                     )}
                   </span>
                 </div>
-                <div className="font-label text-xs" style={{ color: p.ready || p.address === room.host ? "var(--green)" : "var(--very-muted)", letterSpacing: "0.1em" }}>
+                <div className="font-label text-xs" style={{
+                  color: p.ready || p.address === room.host ? "var(--green)" : "var(--very-muted)",
+                  letterSpacing: "0.1em"
+                }}>
                   {p.address === room.host ? "HOST" : p.ready ? "READY" : "WAITING"}
                 </div>
               </div>
