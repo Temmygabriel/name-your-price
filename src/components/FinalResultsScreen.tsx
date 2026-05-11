@@ -1,14 +1,15 @@
 "use client";
 import type { Room } from "@/types";
-import { getPlayerAddress } from "@/lib/contract";
+import { makeAccount } from "@/lib/contract";
 
 interface Props {
   room: Room;
+  account: ReturnType<typeof makeAccount>;
   onPlayAgain: () => void;
 }
 
-export default function FinalResultsScreen({ room, onPlayAgain }: Props) {
-  const myAddr = getPlayerAddress();
+export default function FinalResultsScreen({ room, account, onPlayAgain }: Props) {
+  const myAddr = account.address;
   const humanPlayers = Object.values(room.players)
     .filter((p) => !p.is_bot)
     .sort((a, b) => b.score - a.score);
@@ -21,7 +22,6 @@ export default function FinalResultsScreen({ room, onPlayAgain }: Props) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8" style={{ background: "var(--bg)" }}>
       <div className="w-full max-w-md fade-up">
-        {/* Winner banner */}
         <div className="text-center mb-8">
           <div className="font-label text-xs mb-2" style={{ color: "var(--amber)", letterSpacing: "0.2em" }}>GAME OVER</div>
           <h1 className="font-display mb-1" style={{ fontSize: "3rem" }}>
@@ -36,7 +36,6 @@ export default function FinalResultsScreen({ room, onPlayAgain }: Props) {
           </div>
         </div>
 
-        {/* Leaderboard */}
         <div className="card p-4 mb-6">
           <div className="font-label text-xs mb-4" style={{ color: "var(--muted)", letterSpacing: "0.12em" }}>FINAL STANDINGS</div>
           <div className="flex flex-col gap-2">
@@ -78,7 +77,6 @@ export default function FinalResultsScreen({ room, onPlayAgain }: Props) {
           </div>
         </div>
 
-        {/* Scoring legend */}
         <div className="card p-4 mb-6">
           <div className="font-label text-xs mb-3" style={{ color: "var(--very-muted)", letterSpacing: "0.12em" }}>SCORING</div>
           <div className="flex flex-col gap-1">

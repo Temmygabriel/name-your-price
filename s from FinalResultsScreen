@@ -1,0 +1,55 @@
+warning: in the working copy of 'src/components/FinalResultsScreen.tsx', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/src/components/FinalResultsScreen.tsx b/src/components/FinalResultsScreen.tsx[m
+[1mindex 17b5234..beabec6 100644[m
+[1m--- a/src/components/FinalResultsScreen.tsx[m
+[1m+++ b/src/components/FinalResultsScreen.tsx[m
+[36m@@ -1,14 +1,15 @@[m
+ "use client";[m
+ import type { Room } from "@/types";[m
+[31m-import { getPlayerAddress } from "@/lib/contract";[m
+[32m+[m[32mimport { makeAccount } from "@/lib/contract";[m
+ [m
+ interface Props {[m
+   room: Room;[m
+[32m+[m[32m  account: ReturnType<typeof makeAccount>;[m
+   onPlayAgain: () => void;[m
+ }[m
+ [m
+[31m-export default function FinalResultsScreen({ room, onPlayAgain }: Props) {[m
+[31m-  const myAddr = getPlayerAddress();[m
+[32m+[m[32mexport default function FinalResultsScreen({ room, account, onPlayAgain }: Props) {[m
+[32m+[m[32m  const myAddr = account.address;[m
+   const humanPlayers = Object.values(room.players)[m
+     .filter((p) => !p.is_bot)[m
+     .sort((a, b) => b.score - a.score);[m
+[36m@@ -21,7 +22,6 @@[m [mexport default function FinalResultsScreen({ room, onPlayAgain }: Props) {[m
+   return ([m
+     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8" style={{ background: "var(--bg)" }}>[m
+       <div className="w-full max-w-md fade-up">[m
+[31m-        {/* Winner banner */}[m
+         <div className="text-center mb-8">[m
+           <div className="font-label text-xs mb-2" style={{ color: "var(--amber)", letterSpacing: "0.2em" }}>GAME OVER</div>[m
+           <h1 className="font-display mb-1" style={{ fontSize: "3rem" }}>[m
+[36m@@ -36,7 +36,6 @@[m [mexport default function FinalResultsScreen({ room, onPlayAgain }: Props) {[m
+           </div>[m
+         </div>[m
+ [m
+[31m-        {/* Leaderboard */}[m
+         <div className="card p-4 mb-6">[m
+           <div className="font-label text-xs mb-4" style={{ color: "var(--muted)", letterSpacing: "0.12em" }}>FINAL STANDINGS</div>[m
+           <div className="flex flex-col gap-2">[m
+[36m@@ -78,7 +77,6 @@[m [mexport default function FinalResultsScreen({ room, onPlayAgain }: Props) {[m
+           </div>[m
+         </div>[m
+ [m
+[31m-        {/* Scoring legend */}[m
+         <div className="card p-4 mb-6">[m
+           <div className="font-label text-xs mb-3" style={{ color: "var(--very-muted)", letterSpacing: "0.12em" }}>SCORING</div>[m
+           <div className="flex flex-col gap-1">[m
+[36m@@ -104,4 +102,4 @@[m [mexport default function FinalResultsScreen({ room, onPlayAgain }: Props) {[m
+       </div>[m
+     </div>[m
+   );[m
+[31m-}[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
