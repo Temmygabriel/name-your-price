@@ -38,6 +38,7 @@ export default function HomePage() {
   const prevRoundRef = useRef(-1);
   const pollingRef = useRef(false);
   const roomCodeRef = useRef("");
+  const hasVotedRef = useRef(false);
 
   roomCodeRef.current = roomCode;
 
@@ -53,6 +54,7 @@ export default function HomePage() {
     advancingRoundRef.current = false;
     allVotedAtRef.current = 0;
     revealStartRef.current = 0;
+    hasVotedRef.current = false;
   }
 
   const poll = useCallback(async () => {
@@ -83,9 +85,9 @@ export default function HomePage() {
         const roundVotes = data.votes[roundKey] ?? {};
         const humanPids = Object.keys(data.players).filter((p) => !p.startsWith("bot_"));
         const allVoted = humanPids.every((p) => roundVotes[p]);
-        const myVoted = !!roundVotes[myAddr];
 
-        if (!myVoted) {
+        // Use local ref — never snap back once voted
+        if (!hasVotedRef.current) {
           setScreen("round_active");
         } else {
           setScreen("round_scoring_wait");
@@ -199,7 +201,15 @@ export default function HomePage() {
   }
 
   if (screen === "lobby") {
-    return <LobbyScreen room={room} roomCode={roomCode} playerName={playerName} onLeave={handleLeave} />;
+    return (
+      <LobbyScreen
+        room={room}
+        roomCode={roomCode}
+        playerName={playerName}
+        account={accountRef.current!}
+        onLeave={handleLeave}
+      />
+    );
   }
 
   if (screen === "round_active") {
@@ -209,6 +219,7 @@ export default function HomePage() {
         roomCode={roomCode}
         account={accountRef.current!}
         onVoted={() => {
+          hasVotedRef.current = true;
           pollingRef.current = false;
           poll();
         }}
@@ -217,15 +228,15 @@ export default function HomePage() {
   }
 
   if (screen === "round_scoring_wait") {
-    return <RoundScoringWaitScreen room={room} />;
+    return <RoundScoringWaitScreen room={room} account={accountRef.current!} />;
   }
 
   if (screen === "round_reveal") {
-    return <RoundRevealScreen room={room} roomCode={roomCode} />;
+    return <RoundRevealScreen room={room} roomCode={roomCode} account={accountRef.current!} />;
   }
 
   if (screen === "final_results") {
-    return <FinalResultsScreen room={room} onPlayAgain={handleLeave} />;
+    return <FinalResultsScreen room={room} account={accountRef.current!} onPlayAgain={handleLeave} />;
   }
 
   return null;
